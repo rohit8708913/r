@@ -19,7 +19,7 @@ async def is_subscribed(filter, client, update):
     global FSUB_ENABLED, FSUB_CHANNEL, ADMINS
 
     # If Fsub is disabled, allow all users
-    if not FSUB_CHANNEL:
+    if not FSUB_CHANNEL or not FSUB_ENABLED:
         return True
 
     user_id = update.from_user.id
