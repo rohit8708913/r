@@ -47,19 +47,35 @@ class Bot(Client):
         self.uptime = datetime.now()
 
         # Force subscription dynamic setup
-        if FSUB_ENABLED and FSUB_CHANNEL:
-            try:
-                link = (await self.get_chat(FSUB_CHANNEL)).invite_link
-                if not link:
-                    await self.export_chat_invite_link(FSUB_CHANNEL)
-                    link = (await self.get_chat(FSUB_CHANNEL)).invite_link
-                self.invitelink = link
-            except Exception as e:
-                self.LOGGER(__name__).warning(e)
-                self.LOGGER(__name__).warning("Failed to export invite link for Fsub channel!")
-                self.LOGGER(__name__).warning(f"Check FSUB_CHANNEL ({FSUB_CHANNEL}) and ensure the bot is admin with invite permissions.")
-                sys.exit()
+if FSUB_ENABLED and FSUB_CHANNEL:
+    try:
+        # Check if the channel mode is direct or request
+        mode = await db.get_fsub_mode(FSUB_CHANNEL)  # Fetch mode from the database
 
+        if mode == "direct":
+            # Generate or fetch the direct invite link
+            link = (await self.get_chat(FSUB_CHANNEL)).invite_link
+            if not link:
+                await self.export_chat_invite_link(FSUB_CHANNEL)
+                link = (await self.get_chat(FSUB_CHANNEL)).invite_link
+            self.invitelink = link
+
+        elif mode == "request":
+            # Generate a join request invite link
+            link = (await self.create_chat_invite_link(
+                chat_id=FSUB_CHANNEL,
+                creates_join_request=True
+            )).invite_link
+            self.invitelink = link
+
+        else:
+            raise ValueError(f"Invalid FSUB mode for channel {FSUB_CHANNEL}. Expected 'direct' or 'request'.")
+
+    except Exception as e:
+        self.LOGGER(__name__).warning(f"Error during FSUB setup: {e}")
+        self.LOGGER(__name__).warning("Failed to export invite link for FSUB channel!")
+        self.LOGGER(__name__).warning(f"Check FSUB_CHANNEL ({FSUB_CHANNEL}) and ensure the bot is admin with invite permissions.")
+        sys.exit()
         # Validate DB channel access
         try:
             db_channel = await self.get_chat(CHANNEL_ID)
