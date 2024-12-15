@@ -26,3 +26,31 @@ async def full_userbase():
 async def del_user(user_id: int):
     user_data.delete_one({'_id': user_id})
     return
+
+
+    async def get_fsub_mode(self, channel_id):
+        self.col = self.db["fsub_modes"]
+        try:
+            doc = await self.col.find_one({"channel_id": channel_id})
+            if doc and "mode" in doc:
+                return doc["mode"] if doc["mode"] in ["direct", "request"] else "direct"
+            else:
+                return "direct"
+        except Exception as e:
+            print(f"Error getting FSUB mode for channel {channel_id}: {e}")
+            return "direct"
+
+    async def set_fsub_mode(self, channel_id, mode):
+        self.col = self.db["fsub_modes"]
+        try:
+            result = await self.col.update_one(
+                {"channel_id": channel_id}, 
+                {"$set": {"mode": mode}}, 
+                upsert=True
+            )
+            if result.matched_count > 0:
+                print(f"FSUB mode for Channel {channel_id} updated to `{mode}`.")
+            else:
+                print(f"FSUB mode for Channel {channel_id} set to `{mode}` (new document).")
+        except Exception as e:
+            print(f"Error setting FSUB mode for channel {channel_id}: {e}")
