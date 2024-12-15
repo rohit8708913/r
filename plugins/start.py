@@ -429,18 +429,44 @@ async def toggle_fsub(client: Client, message: Message):
 
 @Bot.on_message(filters.command('fsubstatus') & filters.user(ADMINS))
 async def fsub_status(client: Client, message: Message):
-    global FSUB_ENABLED
-    global FSUB_CHANNEL
+    global FSUB_ENABLED4, FSUB_CHANNEL4
 
-    status = "enabled" if FSUB_ENABLED else "disabled"
+    status = "enabled" if FSUB_ENABLED4 else "disabled"
+    channel_info = f"Channel ID: {FSUB_CHANNEL4 or 'Not Set'}"
+    mode = "Not Set"  # Default mode if no mode is set
+
     if FSUB_ENABLED and FSUB_CHANNEL:
-        channel_info = f"Channel ID: `{FSUB_CHANNEL}`"
-    else:
-        channel_info = "No channel set."
+        try:
+            mode = await db.get_fsub_mode(FSUB_CHANNEL4)
+            invite_link = await client.export_chat_invite_link(FSUB_CHANNEL)
+            channel_info += f"\nInvite Link: {invite_link}"
+        except Exception as e:
+            channel_info += f"\nInvite Link: Error generating link ({e})"
 
-    await message.reply_text(
-        f"**Force Subscription Status:**\n\n"
+    await message.reply(
+        f"**Force Subscription Status for Channel 4:**\n\n"
         f"**Status:** {status.capitalize()}\n"
-        f"{channel_info}",
-        parse_mode=ParseMode.MARKDOWN
+        f"**Mode:** {mode}\n"
+        f"{channel_info}"
     )
+
+
+
+#=====================================================================================##
+
+# Command to change FSUB mode for Channel 
+@Bot.on_message(filters.command("setmode") & filters.user(ADMINS))
+async def set_fsub_mode(client, message: Message):
+    args = message.text.split()
+    if len(args) < 2:
+        await message.reply("Usage: /setmode <direct/request>")
+        return
+
+    mode = args[1].lower()
+    if mode not in ["direct", "request"]:
+        await message.reply("Invalid mode! Use `direct` or `request`.")
+        return
+
+    # Update the FSUB mode for Channel 1
+    await db.set_fsub_mode(FSUB_CHANNEL, mode)
+    await message.reply(f"FSUB mode for Channel  set to `{mode}`.")
