@@ -282,8 +282,8 @@ async def not_joined(client: Client, message: Message):
                 await db.add_user1(user_id, FSUB_CHANNEL, message.from_user.first_name, message.from_user.username)
 
                 # Create a special invite link for join request
-                link = (await client.create_chat_invite_link(FSUB_CHANNEL, creates_join_request=True)).invite_link
-                buttons = [[InlineKeyboardButton("Join Channel", url=link)]]
+                link1 = (await client.create_chat_invite_link(FSUB_CHANNEL, creates_join_request=True)).invite_link
+                buttons = [[InlineKeyboardButton("Join Channel", url=link1)]]
 
                 # Add "Try Again" button
                 try:
