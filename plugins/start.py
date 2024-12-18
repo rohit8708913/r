@@ -271,7 +271,7 @@ async def not_joined(client: Client, message: Message):
         elif mode == "request":
             # Request mode: Log join request
             try:
-                has_requested = await db.has_join_request(user_id, FSUB_CHANNEL)
+                has_requested = await db.check_existing_request(user_id, FSUB_CHANNEL)
                 if has_requested:
                     # If the user has already requested
                     print(f"User {user_id} already sent join request for {FSUB_CHANNEL}. Proceeding with start command.")
