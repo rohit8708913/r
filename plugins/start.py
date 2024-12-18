@@ -9,10 +9,13 @@ from config import *
 from helper_func import *
 from database.database import add_user, del_user, full_userbase, present_user
 
+
 #=====================================================================================##
 
 FSUB_CHANNEL = None  # Default value if not set
 FSUB_ENABLED = True  # Change dynamically using commands
+# Initialize databases for each channel
+db1 = JoinReqs1()
 
 
 async def is_subscribed(filter, client, update):
