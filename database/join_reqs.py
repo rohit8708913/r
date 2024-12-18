@@ -190,3 +190,8 @@ class JoinReqs:
         except Exception as e:
             print(f"Error creating invite link for Channel {channel_id}: {e}")
             return None
+
+    async def get_user(self, user_id):
+        return await self.col.find_one({"user_id": int(user_id)})
+
+    
