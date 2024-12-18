@@ -8,7 +8,7 @@ from bot import Bot
 from config import *
 from helper_func import *
 from database.database import add_user, del_user, full_userbase, present_user
-from database.joinreqs import JoinReqs
+from database.join_reqs import JoinReqs
 
 #=====================================================================================##
 
