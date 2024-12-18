@@ -157,5 +157,41 @@ class JoinReqs:
         # Delete the document with the channel_id in store_reqLink_data
         await self.store_reqLink_data.delete_one({'_id': channel_id})
 
+    async def get_fsub_mode(self, channel_id):
+        self.col = self.db["fsub_modes"]
+        try:
+            doc = await self.col.find_one({"channel_id": channel_id})
+            if doc and "mode" in doc:
+                mode = doc["mode"] if doc["mode"] in ["direct", "request"] else "direct"
+                print(f"FSUB mode for channel {channel_id}: {mode}")
+                return mode
+            else:
+                print("No FSUB mode found, defaulting to 'direct'")
+                return "direct"
+        except Exception as e:
+            print(f"Error getting FSUB mode for channel {channel_id}: {e}")
+            return "direct"
+
+    async def set_fsub_mode(self, channel_id, mode):
+        self.col = self.db["fsub_modes"]
+        try:
+            result = await self.col.update_one(
+                {"channel_id": channel_id},
+                {"$set": {"mode": mode}},
+                upsert=True
+            )
+            print(f"FSUB mode for Channel {channel_id} set to `{mode}`.")
+        except Exception as e:
+            print(f"Error setting FSUB mode for channel {channel_id}: {e}")
+
+    async def create_chat_invite_link(self, client, channel_id):
+        """Create an invite link for the channel."""
+        try:
+            link = await client.create_chat_invite_link(channel_id, creates_join_request=True)
+            print(f"Created invite link: {link.invite_link}")
+            return link.invite_link
+        except Exception as e:
+            print(f"Error creating invite link for Channel {channel_id}: {e}")
+            return None
 
 db = JoinReqs(DB_URI, DB_NAME)
