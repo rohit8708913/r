@@ -28,7 +28,7 @@ PORT = os.environ.get("PORT", "8201")
 #Database 
 DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://nshubh345:1FmseyW0TKaWNMNo@cluster0.pgewb.mongodb.net/?retryWrites=true&w=majority")
 DB_NAME = os.environ.get("DATABASE_NAME", "filesx")
-
+JOIN_REQS_DB = os.environ.get("JOIN_REQS_DB", DB_URI)
 
 # Define initial FSUB status (enabled by default)
 FSUB_ENABLED = True  # Change dynamically using commands
