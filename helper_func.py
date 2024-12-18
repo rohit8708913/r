@@ -20,7 +20,7 @@ async def is_subscribed(filter, client, update):
 
     user_id = update.from_user.id
 
-    if any([user_id == OWNER_ID, await kingdb.admin_exist(user_id)]):
+    if user_id in ADMINS:
         return True
 
     # Handle the case for a single channel directly (no need for gather)
