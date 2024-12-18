@@ -269,22 +269,40 @@ async def not_joined(client: Client, message: Message):
                 return  # Exit after prompting the user
 
         elif mode == "request":
-            # Request mode: Log join request
-            try:
-                has_requested = await db.check_existing_request(user_id, FSUB_CHANNEL)
-                if has_requested:
-                    # If the user has already requested
-                    print(f"User {user_id} already sent join request for {FSUB_CHANNEL}. Proceeding with start command.")
-                    await start_command(client, message)  # Proceed with the start command immediately
-                    return  # Exit after processing the command
+                REQFSUB = await db.get_request_forcesub()
+    buttons = []
+    count = 0
 
-                # Log join request in the database
-                await db.add_user1(user_id, FSUB_CHANNEL, message.from_user.first_name, message.from_user.username)
+    try:
+        for total, chat_id in enumerate(await db.get_all_channels(), start=1):
+            await message.reply_chat_action(ChatAction.PLAYING)
 
-                # Create a special invite link for join request
-                link1 = (await client.create_chat_invite_link(FSUB_CHANNEL, creates_join_request=True)).invite_link
-                buttons = [[InlineKeyboardButton("Join Channel", url=link1)]]
+            # Show the join button of non-subscribed Channels.....
+            if not await is_userJoin(client, user_id, chat_id):
+                try:
+                    # Check if chat data is in cache
+                    if chat_id in chat_data_cache:
+                        data = chat_data_cache[chat_id]  # Get data from cache
+                    else:
+                        data = await client.get_chat(chat_id)  # Fetch from API
+                        chat_data_cache[chat_id] = data  # Store in cache
 
+                    cname = data.title
+
+                    # Handle private channels and links
+                    if REQFSUB and not data.username: 
+                        link = await db.get_stored_reqLink(chat_id)
+                        await db.add_reqChannel(chat_id)
+
+                        if not link:
+                            link = (await client.create_chat_invite_link(chat_id=chat_id, creates_join_request=True)).invite_link
+                            await kingdb.store_reqLink(chat_id, link)
+                    else:
+                        link = (await client.create_chat_invite_link(FSUB_CHANNEL, creates_join_request=True)).invite_link
+
+                    # Add button for the chat
+                    buttons.append([InlineKeyboardButton("Join Channel", url=link)])
+                    count += 1
                 # Add "Try Again" button
                 try:
                     buttons.append([
