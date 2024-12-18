@@ -30,45 +30,52 @@ class JoinReqs:
         return self.col
 
     async def add_user1(self, user_id, channel_id, first_name, username):
-        self.col = self.get_collection()
-        if self.col is None:
-            print("Error: Collection not found for join requests.")
-            return
-        existing_request = await self.get_join_request(user_id, channel_id)
-        if existing_request and existing_request.get("status") == "pending":
-            print(f"User {user_id} already has a pending request for channel {channel_id}. Skipping addition.")
-            return
-        try:
-            request = {
-                "user_id": int(user_id),
-                "channel_id": int(channel_id),
-                "first_name": first_name,
-                "username": username,
-                "date": datetime.now(),  # Current date-time
-                "status": "pending",
-            }
+    self.col = self.get_collection()
+    if self.col is None:
+        print("Error: Collection not found for join requests.")
+        return
+    existing_request = await self.get_join_request(user_id, channel_id)
+    if existing_request and existing_request.get("status") == "pending":
+        print(f"User {user_id} already has a pending request for channel {channel_id}. Skipping addition.")
+        return
+    try:
+        request = {
+            "user_id": int(user_id),
+            "channel_id": int(channel_id),
+            "first_name": first_name,
+            "username": username,
+            "date": datetime.now(),
+            "status": "pending",
+        }
+        # Avoid overwriting existing data unless it's a valid request
+        if not existing_request:
+            result = await self.col.insert_one(request)
+            print(f"Inserted new join request: {result.inserted_id}")
+        else:
             result = await self.col.update_one(
                 {"user_id": int(user_id), "channel_id": int(channel_id)},
-                {"$set": request},
-                upsert=True
+                {"$set": request}
             )
-            print(f"Join request for user {user_id} added to channel {channel_id}.")
-            print(f"Matched count: {result.matched_count}, Upserted ID: {result.upserted_id}")
-        except Exception as e:
-            print(f"Error adding join request: {e}")
+            print(f"Updated existing join request: {result.matched_count}")
+    except Exception as e:
+        print(f"Error adding join request: {e}")
 
     async def get_join_request(self, user_id, channel_id):
-        self.col = self.get_collection()
-        if self.col is None:
-            return None
-        try:
-            print(f"Querying for user_id={user_id}, channel_id={channel_id}")
-            result = await self.col.find_one({"user_id": int(user_id), "channel_id": int(channel_id)})
-            print(f"Query result: {result}")
-            return result
-        except Exception as e:
-            print(f"Error retrieving join request for user {user_id} in channel {channel_id}: {e}")
-            return None
+    self.col = self.get_collection()
+    if self.col is None:
+        print("Error: Collection not found for join requests.")
+        return None
+    try:
+        print(f"Fetching join request for user_id={user_id}, channel_id={channel_id}")
+        result = await self.col.find_one({"user_id": int(user_id), "channel_id": int(channel_id)})
+        if result:
+            print(f"Join request found: {result}")
+        else:
+            print(f"No join request found for user_id={user_id}, channel_id={channel_id}.")
+        return result
+    except Exception as e:
+        print(f"Error retrieving join request for user {user_id} in channel {channel_id}: {e}")
+        return None
 
     async def has_join_request(self, user_id, channel_id):
         request = await self.get_join_request(user_id, channel_id)
