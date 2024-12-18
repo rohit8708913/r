@@ -429,10 +429,10 @@ async def toggle_fsub(client: Client, message: Message):
 
 @Bot.on_message(filters.command('fsubstatus') & filters.user(ADMINS))
 async def fsub_status(client: Client, message: Message):
-    global FSUB_ENABLED4, FSUB_CHANNEL4
+    global FSUB_ENABLED, FSUB_CHANNEL
 
-    status = "enabled" if FSUB_ENABLED4 else "disabled"
-    channel_info = f"Channel ID: {FSUB_CHANNEL4 or 'Not Set'}"
+    status = "enabled" if FSUB_ENABLED else "disabled"
+    channel_info = f"Channel ID: {FSUB_CHANNEL or 'Not Set'}"
     mode = "Not Set"  # Default mode if no mode is set
 
     if FSUB_ENABLED and FSUB_CHANNEL:
