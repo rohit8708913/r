@@ -30,32 +30,32 @@ class JoinReqs:
         return self.col
 
     async def add_user1(self, user_id, channel_id, first_name, username):
-    self.col = self.get_collection()
-    if self.col is None:
-        print("Error: Collection not found for join requests.")
-        return
-    existing_request = await self.get_join_request(user_id, channel_id)
-    if existing_request and existing_request.get("status") == "pending":
-        print(f"User {user_id} already has a pending request for channel {channel_id}. Skipping addition.")
-        return
-    try:
-        request = {
-            "user_id": int(user_id),
-            "channel_id": int(channel_id),
-            "first_name": first_name,
-            "username": username,
-            "date": datetime.now(),  # Current date-time
-            "status": "pending",
-        }
-        result = await self.col.update_one(
-            {"user_id": int(user_id), "channel_id": int(channel_id)},
-            {"$set": request},
-            upsert=True
-        )
-        print(f"Join request for user {user_id} added to channel {channel_id}.")
-        print(f"Matched count: {result.matched_count}, Upserted ID: {result.upserted_id}")
-    except Exception as e:
-        print(f"Error adding join request: {e}")
+        self.col = self.get_collection()
+        if self.col is None:
+            print("Error: Collection not found for join requests.")
+            return
+        existing_request = await self.get_join_request(user_id, channel_id)
+        if existing_request and existing_request.get("status") == "pending":
+            print(f"User {user_id} already has a pending request for channel {channel_id}. Skipping addition.")
+            return
+        try:
+            request = {
+                "user_id": int(user_id),
+                "channel_id": int(channel_id),
+                "first_name": first_name,
+                "username": username,
+                "date": datetime.now(),  # Current date-time
+                "status": "pending",
+            }
+            result = await self.col.update_one(
+                {"user_id": int(user_id), "channel_id": int(channel_id)},
+                {"$set": request},
+                upsert=True
+            )
+            print(f"Join request for user {user_id} added to channel {channel_id}.")
+            print(f"Matched count: {result.matched_count}, Upserted ID: {result.upserted_id}")
+        except Exception as e:
+            print(f"Error adding join request: {e}")
 
     async def get_join_request(self, user_id, channel_id):
         self.col = self.get_collection()
@@ -152,7 +152,6 @@ class JoinReqs:
             print("Error: Collection not found for join requests.")
             return
         try:
-            # You can add a filter to delete users for a specific channel if needed:
             result = await self.col.delete_many({"channel_id": channel_id})
             print(f"Deleted all users for channel {channel_id}: {result.deleted_count} document(s) removed.")
         except Exception as e:
@@ -177,8 +176,8 @@ class JoinReqs:
         self.col = self.db["fsub_modes"]
         try:
             result = await self.col.update_one(
-                {"channel_id": channel_id}, 
-                {"$set": {"mode": mode}}, 
+                {"channel_id": channel_id},
+                {"$set": {"mode": mode}},
                 upsert=True
             )
             print(f"FSUB mode for Channel {channel_id} set to `{mode}`.")
@@ -197,5 +196,3 @@ class JoinReqs:
 
     async def get_user(self, user_id):
         return await self.col.find_one({"user_id": int(user_id)})
-
-    
