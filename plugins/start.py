@@ -15,7 +15,7 @@ from database.join_reqs import JoinReqs
 FSUB_CHANNEL = None  # Default value if not set
 FSUB_ENABLED = True  # Change dynamically using commands
 # Initialize databases for each channel
-db1 = JoinReqs1()
+db = JoinReqs()
 
 
 async def is_subscribed(filter, client, update):
