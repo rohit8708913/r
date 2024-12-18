@@ -287,7 +287,7 @@ async def not_joined(client: Client, message: Message):
                 # User has already sent a join request
                 if not await present_user(user_id):
                     try:
-                        await add_user(user_id)
+                        await add_user1(user_id)
                     except Exception as e:
                         print(f"Error adding user: {e}")
 
@@ -296,10 +296,10 @@ async def not_joined(client: Client, message: Message):
 
             # User has not sent a join request; create a request invite link
             try:
-                link = (await client.create_chat_invite_link(
+                link1 = (await client.create_chat_invite_link(
                     chat_id=FSUB_CHANNEL, creates_join_request=True
                 )).invite_link
-                buttons = [[InlineKeyboardButton("Join channel", url=link)]]
+                buttons = [[InlineKeyboardButton("Join channel", url=link1)]]
 
                 # Add "Try Again" button
                 try:
@@ -382,8 +382,8 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         await asyncio.sleep(8)
         await msg.delete()
 #=====================================================================================##
-@Bot.on_message(filters.command('setfsubid') & filters.user(ADMINS))
-async def set_fsub_id(client: Client, message: Message):
+@Bot.on_message(filters.command('setfsub') & filters.user(ADMINS))
+async def set_fsub(client: Client, message: Message):
     global FSUB_CHANNEL
 
     if len(message.command) != 2:
@@ -437,7 +437,7 @@ async def fsub_status(client: Client, message: Message):
 
     if FSUB_ENABLED and FSUB_CHANNEL:
         try:
-            mode = await db.get_fsub_mode(FSUB_CHANNEL4)
+            mode = await db.get_fsub_mode(FSUB_CHANNEL)
             invite_link = await client.export_chat_invite_link(FSUB_CHANNEL)
             channel_info += f"\nInvite Link: {invite_link}"
         except Exception as e:
