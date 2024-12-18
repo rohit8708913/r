@@ -1,8 +1,9 @@
 
 import motor.motor_asyncio
-from config import DB_URI, DB_NAME
+from config import DB_URI, DB_NAME, ADMINS
 
-class SidDataBase:
+
+class JoinReqs:
 
     def __init__(self, DB_URI, DB_NAME):
         self.dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
@@ -162,7 +163,10 @@ class SidDataBase:
             upsert=True
         )
 
-    # Delete the stored link and the channel from store_reqLink_data
+        # Delete the stored link and the channel from store_reqLink_data
     async def del_stored_reqLink(self, channel_id: int):
         # Delete the document with the channel_id in store_reqLink_data
-        await self.store_reqLink_data.delete_one({'_id': channel_id}db = SidDataBase(DB_URI, DB_NAME)
+        await self.store_reqLink_data.delete_one({'_id': channel_id})
+
+
+db = JoinReqs(DB_URI, DB_NAME)
