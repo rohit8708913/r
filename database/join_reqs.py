@@ -54,7 +54,7 @@ class JoinReqs:
             print(f"Error adding join request: {e}")
 
     async def get_join_request(self, user_id, channel_id):
-        self.col = self.get_collection1()
+        self.col = self.get_collection()
         if self.col is None:
             return None
         try:
