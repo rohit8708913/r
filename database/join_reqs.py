@@ -3,6 +3,9 @@ from datetime import datetime
 from pyrogram.types import ChatJoinRequest
 from config import JOIN_REQS_DB
 
+FSUB_CHANNEL = None  # Default value if not set
+FSUB_ENABLED = True  # Change dynamically using commands
+
 class JoinReqs:
     def __init__(self, db_name="FSUB_CHANNEL"):
         try:
