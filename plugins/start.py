@@ -48,7 +48,7 @@ async def is_subscribed(filter, client, update):
 
         # Request FSUB mode
         elif mode == "request":
-            user = await db1.get_user(user_id)
+            user = await db.get_user(user_id)
             if user and user["user_id"] == user_id:
                 return True  # User has already requested
             try:
