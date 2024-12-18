@@ -37,7 +37,7 @@ async def is_subscribed(filter, client, update):
         # Direct FSUB mode
         if mode == "direct":
             try:
-                member = await client.get_chat_member(chat_id=FSUB_CHANNEL1, user_id=user_id)
+                member = await client.get_chat_member(chat_id=FSUB_CHANNEL, user_id=user_id)
                 return member.status in [
                     ChatMemberStatus.OWNER,
                     ChatMemberStatus.ADMINISTRATOR,
@@ -52,7 +52,7 @@ async def is_subscribed(filter, client, update):
             if user and user["user_id"] == user_id:
                 return True  # User has already requested
             try:
-                member = await client.get_chat_member(chat_id=FSUB_CHANNEL1, user_id=user_id)
+                member = await client.get_chat_member(chat_id=FSUB_CHANNEL, user_id=user_id)
                 return member.status in [
                     ChatMemberStatus.OWNER,
                     ChatMemberStatus.ADMINISTRATOR,
