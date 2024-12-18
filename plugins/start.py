@@ -456,3 +456,31 @@ async def set_fsub_mode(client, message: Message):
     # Update the FSUB mode for Channel 1
     await db.set_fsub_mode(FSUB_CHANNEL, mode)
     await message.reply(f"FSUB mode for Channel  set to `{mode}`.")
+
+#=====================================================================================##
+
+@Bot.on_message(filters.command("total") & filters.private & filters.user(ADMINS))
+async def total_requests(client, message):
+
+    if db().isActive():
+        total = await db().get_all_users_count()
+        await message.reply_text(
+            text=f"🗿 Total Requests: {total} ",
+            parse_mode=enums.ParseMode.MARKDOWN,
+            disable_web_page_preview=True
+        )
+
+#=====================================================================================##
+
+@Bot.on_message(filters.command("clear") & filters.private & filters.user(ADMINS))
+async def purge_requests(client, message):
+
+    if db().isActive():
+        await db().delete_all_users()
+        await message.reply_text(
+            text="Cleared All Requests 🧹",
+            parse_mode=enums.ParseMode.MARKDOWN,
+            disable_web_page_preview=True
+)
+
+#=====================================================================================##
