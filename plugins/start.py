@@ -40,7 +40,7 @@ async def is_subscribed(_, client, update: Message):
     elif mode == "request":
         try:
             # Check if the user has requested to join the FSUB channel
-            join_request = await db1.get_join_request(user_id=update.from_user.id, channel_id=FSUB_CHANNEL)
+            join_request = await db.get_join_request(user_id=update.from_user.id, channel_id=FSUB_CHANNEL)
             if join_request and join_request['status'] == 'pending':
                 print(f"User {update.from_user.id} has a pending join request for Channel .")
                 return True
@@ -279,7 +279,7 @@ async def not_joined(client: Client, message: Message):
                     return  # Exit after processing the command
 
                 # Log join request in the database
-                await db.add_user(user_id, FSUB_CHANNEL, message.from_user.first_name, message.from_user.username)
+                await db.add_user1(user_id, FSUB_CHANNEL, message.from_user.first_name, message.from_user.username)
 
                 # Create a special invite link for join request
                 link = (await client.create_chat_invite_link(FSUB_CHANNEL, creates_join_request=True)).invite_link
