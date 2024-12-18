@@ -18,53 +18,38 @@ FSUB_ENABLED = True  # Change dynamically using commands
 db = JoinReqs()
 
 
-async def is_subscribed(filter, client, update):
-    """
-    Checks if a user is subscribed to a channel based on the FSUB mode (direct/request).
-    """
-    if not FSUB_CHANNEL or not FSUB_ENABLED:  # FSUB is not enabled
-        return True
+# Filter for FSUB_CHANNEL
+async def is_subscribed(_, client, update: Message):
+    if not FSUB_ENABLED or not FSUB_CHANNEL:
+        return True  # FSUB not required if disabled or channel not set
 
-    user_id = update.from_user.id
-    # Allow admins to bypass FSUB checks
-    if user_id in ADMINS:
-        return True
+    # Get FSUB mode for Channel 
+    mode = await db.get_fsub_mode(FSUB_CHANNEL)
 
-    try:
-        # Fetch the mode for FSUB (direct or request)
-        mode = await db.get_fsub_mode(FSUB_CHANNEL)
-
-        # Direct FSUB mode
-        if mode == "direct":
-            try:
-                member = await client.get_chat_member(chat_id=FSUB_CHANNEL, user_id=user_id)
-                return member.status in [
-                    ChatMemberStatus.OWNER,
-                    ChatMemberStatus.ADMINISTRATOR,
-                    ChatMemberStatus.MEMBER,
-                ]
-            except UserNotParticipant:
+    if mode == "direct":
+        try:
+            member = await client.get_chat_member(chat_id=FSUB_CHANNEL, user_id=update.from_user.id)
+            return member.status in [
+                ChatMemberStatus.OWNER,
+                ChatMemberStatus.ADMINISTRATOR,
+                ChatMemberStatus.MEMBER,
+            ]
+        except Exception as e:
+            print(f"Error checking subscription for Channel : {e}")
+            return False
+    elif mode == "request":
+        try:
+            # Check if the user has requested to join the FSUB channel
+            join_request = await db1.get_join_request(user_id=update.from_user.id, channel_id=FSUB_CHANNEL)
+            if join_request and join_request['status'] == 'pending':
+                print(f"User {update.from_user.id} has a pending join request for Channel .")
+                return True
+            else:
+                print(f"User {update.from_user.id} has not sent a join request for Channel .")
                 return False
-
-        # Request FSUB mode
-        elif mode == "request":
-            user = await db.get_user(user_id)
-            if user and user["user_id"] == user_id:
-                return True  # User has already requested
-            try:
-                member = await client.get_chat_member(chat_id=FSUB_CHANNEL, user_id=user_id)
-                return member.status in [
-                    ChatMemberStatus.OWNER,
-                    ChatMemberStatus.ADMINISTRATOR,
-                    ChatMemberStatus.MEMBER,
-                ]
-            except UserNotParticipant:
-                return False
-
-    except Exception as e:
-        print(f"Error in is_subscribed function: {e}")
-        return False
-
+        except Exception as e:
+            print(f"Error checking join request for Channel : {e}")
+            return False
 # Register the filter
 subscribed = filters.create(is_subscribed)
 #=====================================================================================##
@@ -284,25 +269,21 @@ async def not_joined(client: Client, message: Message):
                 return  # Exit after prompting the user
 
         elif mode == "request":
-            # Request mode: Check if the user has requested to join
-            user = await db.get_user(user_id)
-            if user and user["user_id"] == user_id:
-                # User has already sent a join request
-                if not await present_user(user_id):
-                    try:
-                        await add_user1(user_id)
-                    except Exception as e:
-                        print(f"Error adding user: {e}")
-
-                await start_command(client, message)
-                return  # Exit after processing the command
-
-            # User has not sent a join request; create a request invite link
+            # Request mode: Log join request
             try:
-                link1 = (await client.create_chat_invite_link(
-                    chat_id=FSUB_CHANNEL, creates_join_request=True
-                )).invite_link
-                buttons = [[InlineKeyboardButton("Join channel", url=link1)]]
+                has_requested = await db.has_join_request(user_id, FSUB_CHANNEL)
+                if has_requested:
+                    # If the user has already requested
+                    print(f"User {user_id} already sent join request for {FSUB_CHANNEL}. Proceeding with start command.")
+                    await start_command(client, message)  # Proceed with the start command immediately
+                    return  # Exit after processing the command
+
+                # Log join request in the database
+                await db.add_user(user_id, FSUB_CHANNEL, message.from_user.first_name, message.from_user.username)
+
+                # Create a special invite link for join request
+                link = (await client.create_chat_invite_link(FSUB_CHANNEL, creates_join_request=True)).invite_link
+                buttons = [[InlineKeyboardButton("Join Channel", url=link)]]
 
                 # Add "Try Again" button
                 try:
@@ -325,6 +306,8 @@ async def not_joined(client: Client, message: Message):
                     ),
                     reply_markup=InlineKeyboardMarkup(buttons)
                 )
+                return  # Exit after prompting the user
+
             except Exception as e:
                 print(f"Error creating join request invite link: {e}")
 
