@@ -23,7 +23,7 @@ class JoinReqs:
     def is_active(self):
         return self.client is not None
 
-    def get_collection1(self):
+    def get_collection(self):
         if not self.is_active():
             print("Error: Database connection is not active.")
             return None
