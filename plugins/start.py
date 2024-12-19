@@ -209,6 +209,9 @@ async def start_command(client: Client, message: Message):
 
  #=====================================================================================##
  
+
+# Create a global dictionary to store chat data
+chat_data_cache = {}
 @Bot.on_message(filters.command('start') & filters.private)
 async def not_joined(client: Client, message: Message):
     global FSUB_CHANNEL
@@ -287,7 +290,7 @@ async def not_joined(client: Client, message: Message):
                         data = await client.get_chat(chat_id)  # Fetch from API
                         chat_data_cache[chat_id] = data  # Store in cache
 
-                    cname = data.title
+                    
 
                     # Handle private channels and links
                     if REQFSUB and not data.username: 
@@ -296,7 +299,7 @@ async def not_joined(client: Client, message: Message):
 
                         if not link:
                             link = (await client.create_chat_invite_link(chat_id=chat_id, creates_join_request=True)).invite_link
-                            await kingdb.store_reqLink(chat_id, link)
+                            await db.store_reqLink(chat_id, link)
                     else:
                         link = (await client.create_chat_invite_link(FSUB_CHANNEL, creates_join_request=True)).invite_link
 
