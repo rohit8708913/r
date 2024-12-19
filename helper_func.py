@@ -15,8 +15,12 @@ from pyrogram.errors import UserNotParticipant, RPCError
 async def is_subscribed(filter, client, update):
     Channel_ids = await db.get_all_channels()
 
-    if not Channel_ids:
-        return True
+        if not FSUB_ENABLED or not FSUB_CHANNEL:
+        return True  # FSUB not required if disabled or channel not set
+
+    # Get FSUB mode for Channel 
+    mode = await db.get_fsub_mode(FSUB_CHANNEL)
+
 
     user_id = update.from_user.id
 
